@@ -1,5 +1,7 @@
 # 어플리케이션 배포하기
 
+[원본 링크](https://minikube.sigs.k8s.io/docs/start/)
+
 ---
 
 ```bash
@@ -120,7 +122,7 @@ kubectl port-forward service/hello-kubectl 7080:8080
 
 ### 3. `7080:8080`
 
-현재 로컬 머신으로 사용되는 `ip:7080` <==> `{CLUSTER-IP:8080}`이 연결됩니다.
+현재 로컬 머신으로 사용되는 `localhost:7080` <==> `{CLUSTER-IP:8080}`이 연결됩니다.
 
 로컬 머신의 ip는 `localhost` 즉, `127.0.0.1`을 의미합니다. 
 
@@ -171,7 +173,7 @@ User-Agent: curl/8.4.0
 ```mermaid
 graph TD;
     subgraph 클러스터 외부
-        Image(*Image*\n kicbase/echo-server:1.0) --> Deployment
+        Image(*Image*\n kicbase/echo-server:1.0) --> Deployment(*Deployment*\n hello-kubectl)
         subgraph 클러스터 내부
             Deployment --> ReplicaSet(*Replica Set*\n hello-kubectl-546d8d4b8b)
             ReplicaSet --> Pod(*pod*\n hello-kubectl-546d8d4b8b-z5qq2\n 여러 pod을 만들 수 있음)
@@ -230,6 +232,6 @@ kubectl delete svc/hello-kubectl && kubectl delete deployment/hello-kubectl
 
 ## Kubernetes(k8s) 종료하기
 
-Docker Desktop 실행과 함께 Kubernetes가 실행되기 때문에, 
+Docker Desktop 실행과 함께 Kubernetes가 실행되기 때문에,  
 
 Docker Desktop을 종료하면 Kubernetes도 안전하게 종료된다.

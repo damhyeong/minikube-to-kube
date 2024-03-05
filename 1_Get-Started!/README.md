@@ -10,6 +10,9 @@
 * **로컬 머신** : `2 CPU`, `2GB Memory`, `20GB disk` 스펙 이상을 갖추기
 * **인터넷 환경 필수** : 튜토리얼을 위한 `image` 가져와야 됩니다.
 * **도커와 컨테이너 환경에 대한 최소한의 이해** : 없다면 고생길이 펼쳐집니다.
+
+[원본 링크](https://minikube.sigs.k8s.io/docs/start/)
+
 ---
 
 # Kubernetes 시작하기
@@ -68,3 +71,4 @@ kubernetes-dashboard   kubernetes-dashboard-78f87ddfc-87kkj         1/1     Runn
 Dashboard 적용에 대한 내용은 처음부터 배우긴 어려우니, 기본적인 개념과 적용에 대해서 배우도록 하겠습니다.
 
 대시보드 적용과 테스팅 유저 생성을 위한 yaml파일 작성, 접속 링크의 이해에 대해 다루겠습니다.
+
