@@ -214,3 +214,47 @@ Echo server listening on port 8080.
 그리고 애초에 [kicbase/echo-server:1.0](https://hub.docker.com/layers/kicbase/echo-server/1.0/images/sha256-42a89d9b22e5307cb88494990d5d929c401339f508c0a7e98a4d8ac52623fc5b?context=explore)에 들어가 보면,
 
 Port가 8080으로 매핑되어 있는 것을 볼 수 있다.
+
+이후, 다시 7080포트로 요청을 보내면, 응답이 잘 오는 것을 볼 수 있다.
+
+```bash
+curl http://localhost:7080
+```
+```text
+Result : 
+
+Request served by balanced-dc9897bb7-48f9g
+
+HTTP/1.1 GET /
+
+Host: localhost:7080
+Accept: */*
+User-Agent: curl/8.4.0
+```
+
+---
+
+## 설치한 리소스 정리하기
+
+1. Deployment 생성
+2. Service 생성
+
+위의 학습대로라면, 
+
+`Deployment` 명령으로 ReplicaSet, Pod 4개가 생성되었고,
+
+`Service`를 생성하기 위해 Deployment 정보로부터 LoadBalancer 서비스를 만들었다.
+
+```bash
+kubectl delete svc balanced && kubectl delete deployment balanced
+```
+위 명령을 실행하면 `Service`, `Deployment`리소스가 삭제된다.
+
+그런데, `ReplicaSet`, 4 개의 `Pod`이 사라져 있다.
+
+이유는 `Deployment`에 종속된 리소스는 위 두가지이기 때문이기 때문이다.
+
+`Service`는 `Deployment`에 종속되지 않고, `Pod`들과 직접적인 연결에 의존적이다.
+
+`Service`를 삭제 한 후, `Deployment`를 삭제한다면, 생성되었던 리소스가 삭제된다.
+
