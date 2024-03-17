@@ -40,7 +40,7 @@ graph LR
   * 허나, 문자열 하나 혹은 띄어쓰기가 잘못되었다면, 취소 후 다시 입력해야 함
 * 두 번째로, 원하는 에디터에서 `yaml` 작성 후, `kubectl apply -f {만든 파일.yaml}`
   * 쿠버네티스에 적용 할 파일을 담아둘 폴더를 만드세요 - 그게 편해요
-  * 
+  * 이 방식으로 쿠버네티스의 리소스를 만들 겁니다.
 
 ### `NodePort`, `LoadBalancer`에 사용될 - Deployment 생성 과정
 
@@ -95,6 +95,9 @@ kubectl get deployment -l app=echo-server
 
 apiVersion: v1
 kind: Service
+
+# Service 검색 시 이름은 "echo-server-service"로 나온다.
+# 서비스 리소스 라벨링 ==> app=echo-server
 metadata:
   name: echo-server-service
   labels:
@@ -165,5 +168,5 @@ curl http://localhost:7080
 
 ## 다음 포스팅
 
-* `yaml` 파일을 이용한 서비스 적용 중, 사용된 언어에 대한 이해.
+* `yaml` 파일을 이용한 서비스 적용 중, 사용된 변수에 대한 이해.
 * `label` 선언과 **selector**를 이용한 `Pod` 접근에 대해 배울 예정입니다.
