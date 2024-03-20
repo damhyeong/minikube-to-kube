@@ -70,7 +70,21 @@ Starting to serve on 127.0.0.1:8001
 
 [http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/)
 
+밑의 사진처럼 모든 리소스를 관장하는 대시보드에 접근하기 위해 보안을 요구한다.
 
+![token을 요구하는 대시보드 사진](./screenshot/6-dashboard-token.png)
+
+대시보드에 접근하기 위해서는, `cluster-admin` or `admin` 수준의 보안을 가진 서비스 유저를 만들어 토큰을 뽑아내야 한다.
+
+* `cluster-admin` : 대시보드 입장 시 모든 클러스터 리소스에 대한 조정이 가능하다. But, 모든 리소스 조정이 가능 한 만큼, 위험하다.
+* `admin` : 대시보드 입장 시 **단일** `namespace`에 존재하는 리소스에 대한 조정이 가능하다. 해당 네임스페이스의 리소스 조정이 가능 한 만큼 위험하다.
+* 즉, 전문적으로 리소스를 다룰 수 있는 대시보드를 제작하지 않는 한, 위의 `RBAC` 계정의 존재와 접속은 개발용으로 이용하자.
+
+# 여기서부터 다시 작성
+
+```yaml
+
+```
 
 ---
 
