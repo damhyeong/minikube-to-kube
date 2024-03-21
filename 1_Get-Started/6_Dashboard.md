@@ -198,12 +198,8 @@ eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiw
 
 ![admin 수준 대시보드 UI](./screenshot/6-admin.png)
 
+ cluster-admin이 아닌, admin 권한이 부여 된 유저는 다른 노드의 정보를 볼 수 없습니다.
+
+
+
 ---
-
-### 대시보드를 적용하기 위한 필요 지식
-
-### 1. `ClusterRoleBinding`
-
-### 2. `ServiceAccount`
-
-### 3. `namespace`
