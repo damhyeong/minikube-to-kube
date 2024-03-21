@@ -80,11 +80,123 @@ Starting to serve on 127.0.0.1:8001
 * `admin` : 대시보드 입장 시 **단일** `namespace`에 존재하는 리소스에 대한 조정이 가능하다. 해당 네임스페이스의 리소스 조정이 가능 한 만큼 위험하다.
 * 즉, 전문적으로 리소스를 다룰 수 있는 대시보드를 제작하지 않는 한, 위의 `RBAC` 계정의 존재와 접속은 개발용으로 이용하자.
 
-# 여기서부터 다시 작성
+그리고, `cluster-admin` or `admin` 둘 중 하나에 따라 제공되는 `권한`과 `리소스`가 달라진다.
+
+## 1. cluster-admin 수준의 권한 - k8s 전체 권한
 
 ```yaml
+# kubernetes-dashboard 네임스페이스에 admin-user 이라는 계정 생성 - 아직 권한설정 x
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+# 클러스터 내부에서 어떤 권한을 가지는지 명명한 역할을 "ClusterRoleBinding" 이라고 한다.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  # 이러한 역할의 이름을 나중에 네임스페이스 계정에 주입하기 쉽게
+  # admin-user 라는 이름으로 생성하는 것이다.
+  name: admin-user
+# 이 역할을 어디서 참조하고, 참조한 권한들 중 어떤 수준의 권한을 부여 할 것인가?
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  # admin-user 라고 권한 역할이 명명된 리소스에 권한을 부여한다. - 말 그대로
+  kind: ClusterRole
+  # clusterrole 리소스에 존재하는 cluster-admin을 참조하여 admin-user 역할은 
+  # 클러스터 전부를 다룰 수 있는 관리자 혹은 루트 수준의 권한을 부여한다.
+  name: cluster-admin
+  
+# 위에서 선언 한 ClusterRoleBinding의 "admin-user"라는 역할을 어디에 부여 할 것인가
+subjects:
+  # 맨 위에 kubernetes-dashboard에서 선언한 serviceaccount에 클러스터 루트 수준의 권한을 부여한다.
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
 
 ```
+
+## 2. admin 수준의 권한 - 네임스페이스 관리 권한
+
+우리가 default 네임스페이스에 개발한 모든 리소스를 볼 수 있습니다.
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+  
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+
+```
+
+## 대시보드에 접근하기 위한 시크릿 토큰 생성
+
+```bash
+kubectl -n kubernetes-dashboard create token admin-user
+```
+
+**Result :** 예시일 뿐입니다.
+```text
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLXY1N253Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiIwMzAzMjQzYy00MDQwLTRhNTgtOGE0Ny04NDllZTliYTc5YzEiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZXJuZXRlcy1kYXNoYm9hcmQ6YWRtaW4tdXNlciJ9.Z2JrQlitASVwWbc-s6deLRFVk5DWD3P_vjUFXsqVSY10pbjFLG4njoZwh8p3tLxnX_VBsr7_6bwxhWSYChp9hwxznemD5x5HLtjb16kI9Z7yFWLtohzkTwuFbqmQaMoget_nYcQBUC5fDmBHRfFvNKePh_vSSb2h_aYXa8GV5AcfPQpY7r461itme1EXHQJqv-SN-zUnguDguCTjD80pFZ_CmnSE1z9QdMHPB8hoB4V68gtswR1VLa6mSYdgPwCHauuOobojALSaMc3RH7MmFUumAgguhqAkX3Omqd3rJbYOMRuMjhANqd08piDC3aIabINX6gP5-Tuuw2svnV6NYQ
+```
+
+발급된 토큰은 따로 저장하여 대시보드 입장을 위해 제출 할 수 있지만, Secret으로 token을 저장하는 방법도 존재합니다.
+
+## Secret 리소스에 admin-user token 저장
+
+```yaml
+# 보안 정보 Secret 리소스 생성
+apiVersion: v1
+kind: Secret
+metadata:
+  # 해당 리소스의 이름은 admin-user
+  name: admin-user
+  # kubernetes-dashboard namespace에 속함.
+  namespace: kubernetes-dashboard
+  # annotaions를 통해 "admin-user" 과 해당 Secret이 연결 되어 있음을 의미한다.
+  annotations:
+    kubernetes.io/service-account.name: "admin-user"   
+# 이 Secret 리소스는 서비스 계정의 토큰을 저장하는 데 사용하겠다.
+type: kubernetes.io/service-account-token  
+```
+
+## token 발급 방법
+
+```bash
+kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
+```
+
+**Result :** 예시입니다.
+```text
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLXY1N253Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiIwMzAzMjQzYy00MDQwLTRhNTgtOGE0Ny04NDllZTliYTc5YzEiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZXJuZXRlcy1kYXNoYm9hcmQ6YWRtaW4tdXNlciJ9.Z2JrQlitASVwWbc-s6deLRFVk5DWD3P_vjUFXsqVSY10pbjFLG4njoZwh8p3tLxnX_VBsr7_6bwxhWSYChp9hwxznemD5x5HLtjb16kI9Z7yFWLtohzkTwuFbqmQaMoget_nYcQBUC5fDmBHRfFvNKePh_vSSb2h_aYXa8GV5AcfPQpY7r461itme1EXHQJqv-SN-zUnguDguCTjD80pFZ_CmnSE1z9QdMHPB8hoB4V68gtswR1VLa6mSYdgPwCHauuOobojALSaMc3RH7MmFUumAgguhqAkX3Omqd3rJbYOMRuMjhANqd08piDC3aIabINX6gP5-Tuuw2svnV6NYQ
+```
+
+해당 토큰을 복사하여 대시보드 입장 토큰에 넣는다면, 유저의 권한 수준에 따라 다른 리소스를 보여줍니다.
+
+---
+
+### 보안 수준 : cluster-admin
+
+![cluster-admin 수준 대시보드 UI](./screenshot/6-cluster-admin.png)
+
+### 보안 수준 : admin
+
+![admin 수준 대시보드 UI](./screenshot/6-admin.png)
 
 ---
 
