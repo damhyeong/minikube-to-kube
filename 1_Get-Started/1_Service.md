@@ -3,6 +3,7 @@
 [원본 링크](https://minikube.sigs.k8s.io/docs/start/)
 
 ---
+---
 
 ```bash
 kubectl create deployment hello-kubectl --image=kicbase/echo-server:1.0
